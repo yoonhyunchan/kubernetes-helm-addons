@@ -1,0 +1,27 @@
+global:
+  domain: argocd.chanandy.store  # 사용할 도메인
+
+configs:
+  params:
+    server.insecure: true     # ALB가 TLS 종료하므로 내부 통신은 HTTP로 처리
+
+server:
+  ingress:
+    enabled: true
+    controller: aws
+    ingressClassName: alb
+    annotations:
+      alb.ingress.kubernetes.io/scheme: internet-facing            # 인터넷 공개용 ALB, 내부망용은 internal
+      alb.ingress.kubernetes.io/target-type: instance               # Pod IP가 아닌 노드(인스턴스)로 트래픽 전달
+      alb.ingress.kubernetes.io/backend-protocol: HTTP              # ALB → NodePort 서비스는 HTTP
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}, {"HTTPS":443}]'
+      alb.ingress.kubernetes.io/ssl-redirect: '443'                 # HTTP → HTTPS 리다이렉트 활성화
+      alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-west-2:055332451319:certificate/44c77037-3a74-436a-88e9-ff4f8ee96595  # ACM 인증서 ARN
+      alb.ingress.kubernetes.io/group.name: my-shared-alb
+      alb.ingress.kubernetes.io/group.order: "1"   # (선택) ALB rule 적용 우선순위
+      external-dns.alpha.kubernetes.io/hostname: argocd.chanandy.store
+    aws:
+      serviceType: NodePort                                           # target-type instance 면 서비스 타입은 NodePort
+
+  service:
+    type: NodePort

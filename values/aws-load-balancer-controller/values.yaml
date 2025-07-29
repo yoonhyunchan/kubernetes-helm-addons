@@ -1,0 +1,4 @@
+clusterName: kubernetes
+region: us-west-2
+vpcId: vpc-0c035fb1715ed957e
+
